@@ -17,6 +17,10 @@ import seedu.eduke8.question.QuizQuestionsManager;
 import seedu.eduke8.topic.Topic;
 import seedu.eduke8.ui.Ui;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,6 +32,8 @@ public class SingleTopicQuiz implements Quiz {
     private int numberOfQuestions;
     private QuizParser quizParser;
     private BookmarkList bookmarks;
+
+    boolean nextQuestion = true;
 
     public SingleTopicQuiz(Topic topic, int numberOfQuestions, BookmarkList bookmarks) {
         assert topic != null;
@@ -58,17 +64,23 @@ public class SingleTopicQuiz implements Quiz {
 
         ui.printStartQuizPage(numberOfQuestions, topic.getDescription());
 
-        goThroughQuizQuestions(ui, quizQuestionsManager);
+        try{
+            goThroughQuizQuestions(ui, quizQuestionsManager);
+        } catch (IOException e) {
+            System.out.println("IO error");
+        }
+
 
         ui.printEndQuizPage();
 
         LOGGER.log(Level.INFO, "Quiz ended.");
     }
 
-    private void goThroughQuizQuestions(Ui ui, QuizQuestionsManager quizQuestionsManager) {
-        while (!quizQuestionsManager.areAllQuestionsAnswered()) {
+    private void goThroughQuizQuestions(Ui ui, QuizQuestionsManager quizQuestionsManager) throws IOException {
+        while ((!quizQuestionsManager.areAllQuestionsAnswered()) && nextQuestion) {
             Question question = quizQuestionsManager.getNextQuestion();
             ui.printQuestion(question, quizQuestionsManager.getCurrentQuestionNumber());
+            nextQuestion = false;
 
             question.markAsShown();
             assert question.wasShown();
@@ -82,32 +94,50 @@ public class SingleTopicQuiz implements Quiz {
             }
 
             quizParser.setQuestion(question);
+            ui.printQuizMessagePrompt();
+            BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+            long startTime = System.currentTimeMillis();
 
-            Command command = getCommand(ui, optionList);
-
-            assert (command instanceof AnswerCommand || command instanceof HintCommand
-                    || command instanceof BookmarkCommand);
-
-            while (!(command instanceof AnswerCommand)) {
-                command.execute(optionList, ui);
-                command = getCommand(ui, optionList);
-                if (command instanceof IncorrectCommand) {
-                    LOGGER.log(Level.INFO, "Invalid answer given for question");
-                } else if (command instanceof HintCommand) {
-                    LOGGER.log(Level.INFO, "Hint shown");
-                } else {
-                    LOGGER.log(Level.INFO, "Question bookmarked");
+            while (!input.ready()) {
+                if ((System.currentTimeMillis() - startTime) > 10*1000) {
+                    System.out.println("Did not answer for 10 sec");
+                    nextQuestion = true;
+                    break;
                 }
             }
 
-            LOGGER.log(Level.INFO, "Question answered");
+            while (!nextQuestion) {
+                String userInput = input.readLine();
+                Command command = getCommand(ui, optionList, userInput);
 
-            command.execute(optionList, ui);
+                assert (command instanceof AnswerCommand || command instanceof HintCommand
+                        || command instanceof BookmarkCommand);
+
+                //Within 10 sec + incorrect answer
+                while (!(command instanceof AnswerCommand) && (System.currentTimeMillis() - startTime) <= 10*1000) {
+                    command.execute(optionList, ui);
+                    command = getCommand(ui, optionList, userInput);
+                    if (command instanceof IncorrectCommand) {
+                        LOGGER.log(Level.INFO, "Invalid answer given for question");
+                    } else if (command instanceof HintCommand) {
+                        LOGGER.log(Level.INFO, "Hint shown");
+                    } else {
+                        LOGGER.log(Level.INFO, "Question bookmarked");
+                    }
+                }
+
+                LOGGER.log(Level.INFO, "Question answered");
+
+                if (command instanceof AnswerCommand) {
+                    nextQuestion = true;
+                }
+
+                command.execute(optionList, ui);
+            }
         }
     }
 
-    private Command getCommand(Ui ui, OptionList optionList) {
-        String userInput = ui.getQuizInputFromUser();
+    private Command getCommand(Ui ui, OptionList optionList, String userInput) {
         return quizParser.parseCommand(optionList, userInput);
     }
 }

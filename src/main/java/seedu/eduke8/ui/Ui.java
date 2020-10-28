@@ -98,10 +98,13 @@ public class Ui {
         return SCANNER.nextLine();
     }
 
-    public String getQuizInputFromUser() {
-        System.out.print(MESSAGE_GET_INPUT_FROM_USER_QUIZ);
-        return SCANNER.nextLine();
+    public void printQuizMessagePrompt() {
+        System.out.println(MESSAGE_GET_INPUT_FROM_USER_QUIZ);
     }
+
+//    public String getQuizInputFromUser() {
+//        return SCANNER.nextLine();
+//    }
 
     private static void printMessage(String message) {
         System.out.println(HORIZONTAL_LINE);
