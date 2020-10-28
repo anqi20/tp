@@ -36,6 +36,7 @@ public class SingleTopicQuiz implements Quiz {
 
     boolean nextQuestion = true;
     boolean timersUp = false;
+    boolean firstRound = true;
 
     public SingleTopicQuiz(Topic topic, int numberOfQuestions, BookmarkList bookmarks, int timer) {
         assert topic != null;
@@ -84,6 +85,7 @@ public class SingleTopicQuiz implements Quiz {
             ui.printQuestion(question, quizQuestionsManager.getCurrentQuestionNumber());
             nextQuestion = false;
             timersUp = false;
+            firstRound = true; 
 
             question.markAsShown();
             assert question.wasShown();
@@ -100,7 +102,7 @@ public class SingleTopicQuiz implements Quiz {
             ui.printQuizMessagePrompt();
             BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
             long startTime = System.currentTimeMillis();
-            String userInput = "";
+            String userInput = null;
 
             while (!input.ready()) {
                 if ((System.currentTimeMillis() - startTime) > timer * CONVERSION_MILLIS_TO_SEC) {
@@ -114,12 +116,13 @@ public class SingleTopicQuiz implements Quiz {
                 }
             }
 
+            userInput = input.readLine();
+            Command command = getCommand(optionList, userInput, timersUp);
+
             while (!nextQuestion) {
-                userInput = input.readLine();
-                Command command = getCommand(optionList, userInput, timersUp);
 
                 assert (command instanceof AnswerCommand || command instanceof HintCommand
-                        || command instanceof BookmarkCommand);
+                        || command instanceof BookmarkCommand || command instanceof IncorrectCommand);
 
                 while (!(command instanceof AnswerCommand)
                         && (System.currentTimeMillis() - startTime) <= timer * CONVERSION_MILLIS_TO_SEC) {
@@ -128,25 +131,50 @@ public class SingleTopicQuiz implements Quiz {
                     command = getCommand(optionList, userInput, timersUp);
                     if (command instanceof IncorrectCommand) {
                         LOGGER.log(Level.INFO, "Invalid answer given for question");
+
                     } else if (command instanceof HintCommand) {
                         LOGGER.log(Level.INFO, "Hint shown");
+
                     } else {
                         LOGGER.log(Level.INFO, "Question bookmarked");
                     }
+
+                    firstRound = false;
+
+                    while (!firstRound) {
+                        input = new BufferedReader(new InputStreamReader(System.in));
+                        userInput = input.readLine();
+                        command = getCommand(optionList, userInput, timersUp);
+
+                        command.execute(optionList, ui);
+
+                        if (command instanceof IncorrectCommand) {
+                            LOGGER.log(Level.INFO, "Invalid answer given for question");
+
+                        } else if (command instanceof HintCommand) {
+                            LOGGER.log(Level.INFO, "Hint shown");
+
+                        } else {
+                            LOGGER.log(Level.INFO, "Question bookmarked");
+                        }
+                    }
+
+
                 }
 
                 LOGGER.log(Level.INFO, "Question answered");
 
                 if (command instanceof AnswerCommand) {
                     nextQuestion = true;
+                    command.execute(optionList, ui);
                 }
-
-                command.execute(optionList, ui);
             }
         }
     }
 
     private Command getCommand(OptionList optionList, String userInput, boolean timersUp) {
+
+
         return quizParser.parseCommand(optionList, userInput);
     }
 }
