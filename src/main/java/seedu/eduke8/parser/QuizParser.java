@@ -4,6 +4,7 @@ import seedu.eduke8.bookmark.BookmarkList;
 import seedu.eduke8.command.Command;
 import seedu.eduke8.command.AnswerCommand;
 import seedu.eduke8.command.BookmarkCommand;
+import seedu.eduke8.command.IncompleteCommand;
 import seedu.eduke8.command.IncorrectCommand;
 import seedu.eduke8.command.HintCommand;
 import seedu.eduke8.common.Displayable;
@@ -55,7 +56,8 @@ public class QuizParser implements Parser {
         } else if (COMMAND_BOOKMARK.equals(userInput)) {
             LOGGER.log(Level.INFO, "Parsing complete: bookmark command chosen.");
             return new BookmarkCommand(question, BOOKMARK_STORE, bookmarks);
-        } else if("".equals(userInput)) {
+        } else if (userInput.isEmpty()) {
+            LOGGER.log(Level.INFO, "Parsing complete: time's up, incomplete command.");
             return new IncompleteCommand(question, 10);
         }
 

@@ -42,7 +42,7 @@ public class Ui {
             + System.lineSeparator() + "2) help"
             + System.lineSeparator() + "3) topics"
             + System.lineSeparator() + "4) textbook"
-            + System.lineSeparator() + "5) quiz t/<topic> n/<number of questions>"
+            + System.lineSeparator() + "5) quiz t/<topic> n/<number of questions> timer/<countdown timer for each qns>"
             + System.lineSeparator() + "6) bookmark"
             + System.lineSeparator() + "7) stats"
             + System.lineSeparator() + "8) exit";
@@ -91,7 +91,9 @@ public class Ui {
     private static final String MESSAGE_POINTS_EARNED_OUT_OF = " points earned / ";
     private static final String PERCENTAGE_SIGN = "%";
     private static final String MESSAGE_AVAILABLE_WORD = " available ";
-
+    private static final String MESSAGE_QUIZ_TIMER = "Oops, you took more than ";
+    private static final String MESSAGE_QUIZ_TIMER_SECOND = " seconds to complete!";
+    private static final String MESSAGE_QUIZ_INCOMPLETE = "The correct answer is ";
 
     public String getInputFromUser() {
         System.out.print(MESSAGE_GET_INPUT_FROM_USER);
@@ -101,10 +103,6 @@ public class Ui {
     public void printQuizMessagePrompt() {
         System.out.println(MESSAGE_GET_INPUT_FROM_USER_QUIZ);
     }
-
-//    public String getQuizInputFromUser() {
-//        return SCANNER.nextLine();
-//    }
 
     private static void printMessage(String message) {
         System.out.println(HORIZONTAL_LINE);
@@ -129,7 +127,7 @@ public class Ui {
     }
 
     public void printQuestion(Question question, int questionNumber) {
-        System.out.println(questionNumber + ". " + question.getDescription() + System.lineSeparator());
+        System.out.println(questionNumber + DOT_SPACE + question.getDescription() + System.lineSeparator());
     }
 
     public void printHint(Hint hint) {
@@ -174,8 +172,8 @@ public class Ui {
 
     public void printIncompleteAnswer(int correctAnswer, String explanation, int timer) {
         System.out.println(HORIZONTAL_LINE);
-        System.out.println("Oops, you took more than " + timer + " seconds to complete!");
-        System.out.println("The correct answer is " + correctAnswer + MESSAGE_ANSWER_WRONG_SECOND);
+        System.out.println(MESSAGE_QUIZ_TIMER + timer + MESSAGE_QUIZ_TIMER_SECOND);
+        System.out.println(MESSAGE_QUIZ_INCOMPLETE + correctAnswer + MESSAGE_ANSWER_WRONG_SECOND);
         System.out.println(System.lineSeparator() + MESSAGE_EXPLANATION + System.lineSeparator() + explanation);
         System.out.println(HORIZONTAL_LINE);
         System.out.println(HORIZONTAL_LINE);

@@ -10,7 +10,7 @@ public class IncompleteCommand extends Command {
     private Question question;
     private int timer;
 
-    public IncompleteCommand (Question question, int timer) {
+    public IncompleteCommand(Question question, int timer) {
         super();
         this.question = question;
         this.timer = timer;

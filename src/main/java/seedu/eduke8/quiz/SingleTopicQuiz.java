@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 
 public class SingleTopicQuiz implements Quiz {
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+    private static final int CONVERSION_MILLIS_TO_SEC = 1000;
 
     private Topic topic;
     private int numberOfQuestions;
@@ -34,6 +35,7 @@ public class SingleTopicQuiz implements Quiz {
     private int timer;
 
     boolean nextQuestion = true;
+    boolean timersUp = false;
 
     public SingleTopicQuiz(Topic topic, int numberOfQuestions, BookmarkList bookmarks, int timer) {
         assert topic != null;
@@ -65,10 +67,10 @@ public class SingleTopicQuiz implements Quiz {
 
         ui.printStartQuizPage(numberOfQuestions, topic.getDescription());
 
-        try{
+        try {
             goThroughQuizQuestions(ui, quizQuestionsManager);
         } catch (IOException e) {
-            System.out.println("IO error");
+            LOGGER.log(Level.WARNING, "Error in quiz timer");
         }
 
         ui.printEndQuizPage();
@@ -81,6 +83,7 @@ public class SingleTopicQuiz implements Quiz {
             Question question = quizQuestionsManager.getNextQuestion();
             ui.printQuestion(question, quizQuestionsManager.getCurrentQuestionNumber());
             nextQuestion = false;
+            timersUp = false;
 
             question.markAsShown();
             assert question.wasShown();
@@ -100,26 +103,29 @@ public class SingleTopicQuiz implements Quiz {
             String userInput = "";
 
             while (!input.ready()) {
-                if ((System.currentTimeMillis() - startTime) > timer*1000) {
+                if ((System.currentTimeMillis() - startTime) > timer * CONVERSION_MILLIS_TO_SEC) {
 
-                    Command command = getCommand(optionList, userInput);
+                    timersUp = true;
+                    Command command = getCommand(optionList, userInput, timersUp);
                     command.execute(optionList, ui);
                     nextQuestion = true;
+                    LOGGER.log(Level.INFO, "Time's up.");
                     break;
                 }
             }
 
             while (!nextQuestion) {
                 userInput = input.readLine();
-                Command command = getCommand(optionList, userInput);
+                Command command = getCommand(optionList, userInput, timersUp);
 
                 assert (command instanceof AnswerCommand || command instanceof HintCommand
                         || command instanceof BookmarkCommand);
 
-                //Within 10 sec + incorrect answer
-                while (!(command instanceof AnswerCommand) && (System.currentTimeMillis() - startTime) <= timer*1000) {
+                while (!(command instanceof AnswerCommand)
+                        && (System.currentTimeMillis() - startTime) <= timer * CONVERSION_MILLIS_TO_SEC) {
+
                     command.execute(optionList, ui);
-                    command = getCommand(optionList, userInput);
+                    command = getCommand(optionList, userInput, timersUp);
                     if (command instanceof IncorrectCommand) {
                         LOGGER.log(Level.INFO, "Invalid answer given for question");
                     } else if (command instanceof HintCommand) {
@@ -140,7 +146,7 @@ public class SingleTopicQuiz implements Quiz {
         }
     }
 
-    private Command getCommand(OptionList optionList, String userInput) {
+    private Command getCommand(OptionList optionList, String userInput, boolean timersUp) {
         return quizParser.parseCommand(optionList, userInput);
     }
 }
