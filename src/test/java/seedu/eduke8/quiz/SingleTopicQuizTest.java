@@ -14,7 +14,7 @@ public class SingleTopicQuizTest extends Eduke8Test {
     public void startQuiz_zeroQuestions_expectEduke8Exception() {
         BookmarkList bookmarks = createTestBookmarkList();
         Topic topic = createTestTopic(PLACEHOLDER_TOPIC_ONE_DESCRIPTION);
-        SingleTopicQuiz singleTopicQuiz = new SingleTopicQuiz(topic, 0, bookmarks);
+        SingleTopicQuiz singleTopicQuiz = new SingleTopicQuiz(topic, 0, bookmarks, 10);
 
         assertThrows(Eduke8Exception.class, () -> singleTopicQuiz.startQuiz(new Ui()));
     }
@@ -25,7 +25,7 @@ public class SingleTopicQuizTest extends Eduke8Test {
         Topic topic = createTestTopic(PLACEHOLDER_TOPIC_ONE_DESCRIPTION);
         int questionsInTopic = topic.getQuestionList().getCount();
 
-        SingleTopicQuiz singleTopicQuiz = new SingleTopicQuiz(topic, questionsInTopic + 1, bookmarks);
+        SingleTopicQuiz singleTopicQuiz = new SingleTopicQuiz(topic, questionsInTopic + 1, bookmarks, 10);
 
         assertThrows(Eduke8Exception.class, () -> singleTopicQuiz.startQuiz(new Ui()));
     }

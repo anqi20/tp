@@ -20,7 +20,6 @@ import seedu.eduke8.ui.Ui;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,15 +31,17 @@ public class SingleTopicQuiz implements Quiz {
     private int numberOfQuestions;
     private QuizParser quizParser;
     private BookmarkList bookmarks;
+    private int timer;
 
     boolean nextQuestion = true;
 
-    public SingleTopicQuiz(Topic topic, int numberOfQuestions, BookmarkList bookmarks) {
+    public SingleTopicQuiz(Topic topic, int numberOfQuestions, BookmarkList bookmarks, int timer) {
         assert topic != null;
 
         this.topic = topic;
         this.numberOfQuestions = numberOfQuestions;
         this.bookmarks = bookmarks;
+        this.timer = timer;
         quizParser = new QuizParser(bookmarks);
     }
 
@@ -70,7 +71,6 @@ public class SingleTopicQuiz implements Quiz {
             System.out.println("IO error");
         }
 
-
         ui.printEndQuizPage();
 
         LOGGER.log(Level.INFO, "Quiz ended.");
@@ -97,26 +97,29 @@ public class SingleTopicQuiz implements Quiz {
             ui.printQuizMessagePrompt();
             BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
             long startTime = System.currentTimeMillis();
+            String userInput = "";
 
             while (!input.ready()) {
-                if ((System.currentTimeMillis() - startTime) > 10*1000) {
-                    System.out.println("Did not answer for 10 sec");
+                if ((System.currentTimeMillis() - startTime) > timer*1000) {
+
+                    Command command = getCommand(optionList, userInput);
+                    command.execute(optionList, ui);
                     nextQuestion = true;
                     break;
                 }
             }
 
             while (!nextQuestion) {
-                String userInput = input.readLine();
-                Command command = getCommand(ui, optionList, userInput);
+                userInput = input.readLine();
+                Command command = getCommand(optionList, userInput);
 
                 assert (command instanceof AnswerCommand || command instanceof HintCommand
                         || command instanceof BookmarkCommand);
 
                 //Within 10 sec + incorrect answer
-                while (!(command instanceof AnswerCommand) && (System.currentTimeMillis() - startTime) <= 10*1000) {
+                while (!(command instanceof AnswerCommand) && (System.currentTimeMillis() - startTime) <= timer*1000) {
                     command.execute(optionList, ui);
-                    command = getCommand(ui, optionList, userInput);
+                    command = getCommand(optionList, userInput);
                     if (command instanceof IncorrectCommand) {
                         LOGGER.log(Level.INFO, "Invalid answer given for question");
                     } else if (command instanceof HintCommand) {
@@ -137,7 +140,7 @@ public class SingleTopicQuiz implements Quiz {
         }
     }
 
-    private Command getCommand(Ui ui, OptionList optionList, String userInput) {
+    private Command getCommand(OptionList optionList, String userInput) {
         return quizParser.parseCommand(optionList, userInput);
     }
 }

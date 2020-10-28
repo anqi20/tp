@@ -18,8 +18,10 @@ public class QuizCommand extends Command {
     private String topicName;
     private Ui ui;
     private BookmarkList bookmarks;
+    private int timer;
 
-    public QuizCommand(TopicList topicList, int numOfQuestions, String topicName, Ui ui, BookmarkList bookmarks) {
+    public QuizCommand(TopicList topicList, int numOfQuestions, String topicName, Ui ui, BookmarkList bookmarks,
+                       int timer) {
         super();
         assert topicList != null;
 
@@ -28,13 +30,14 @@ public class QuizCommand extends Command {
         this.topicName = topicName;
         this.ui = ui;
         this.bookmarks = bookmarks;
+        this.timer = timer;
     }
 
     @Override
     public void execute(DisplayableList displayableList, Ui ui) {
         try {
             Topic topic = (Topic) topicList.find(topicName);
-            SingleTopicQuiz singleTopicQuiz = new SingleTopicQuiz(topic, numOfQuestions, bookmarks);
+            SingleTopicQuiz singleTopicQuiz = new SingleTopicQuiz(topic, numOfQuestions, bookmarks, timer);
             singleTopicQuiz.startQuiz(ui);
         } catch (Eduke8Exception e) {
             ui.printError(e.getMessage());

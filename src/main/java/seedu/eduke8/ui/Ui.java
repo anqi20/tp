@@ -172,6 +172,15 @@ public class Ui {
         System.out.println(HORIZONTAL_LINE);
     }
 
+    public void printIncompleteAnswer(int correctAnswer, String explanation, int timer) {
+        System.out.println(HORIZONTAL_LINE);
+        System.out.println("Oops, you took more than " + timer + " seconds to complete!");
+        System.out.println("The correct answer is " + correctAnswer + MESSAGE_ANSWER_WRONG_SECOND);
+        System.out.println(System.lineSeparator() + MESSAGE_EXPLANATION + System.lineSeparator() + explanation);
+        System.out.println(HORIZONTAL_LINE);
+        System.out.println(HORIZONTAL_LINE);
+    }
+
     public void printHelp() {
         printMessage(MESSAGE_HELP);
     }

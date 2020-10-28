@@ -16,7 +16,7 @@ public class QuizCommandTest extends Eduke8Test {
         Ui ui = new Ui();
         TopicList topicList = createTestTopicList();
         BookmarkList bookmarks = createTestBookmarkList();
-        Command badQuizCommand = new QuizCommand(topicList, 1, "badname", ui, bookmarks);
+        Command badQuizCommand = new QuizCommand(topicList, 1, "badname", ui, bookmarks, 10);
         badQuizCommand.execute(topicList, ui);
         assertTrue(true);
     }
@@ -26,7 +26,7 @@ public class QuizCommandTest extends Eduke8Test {
         Ui ui = new Ui();
         TopicList topicList = createTestTopicList();
         BookmarkList bookmarks = createTestBookmarkList();
-        Command badQuizCommand = new QuizCommand(topicList, 50, "First Topic", ui, bookmarks);
+        Command badQuizCommand = new QuizCommand(topicList, 50, "First Topic", ui, bookmarks, 10);
         badQuizCommand.execute(topicList, ui);
         assertTrue(true);
     }

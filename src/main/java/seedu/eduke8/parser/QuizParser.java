@@ -55,6 +55,8 @@ public class QuizParser implements Parser {
         } else if (COMMAND_BOOKMARK.equals(userInput)) {
             LOGGER.log(Level.INFO, "Parsing complete: bookmark command chosen.");
             return new BookmarkCommand(question, BOOKMARK_STORE, bookmarks);
+        } else if("".equals(userInput)) {
+            return new IncompleteCommand(question, 10);
         }
 
         try {
